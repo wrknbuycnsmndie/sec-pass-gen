@@ -39,17 +39,14 @@ export const PasswordControls = () => {
 
   const handleGenerate = useCallback(() => {
     if (!uppercase && !lowercase && !numbers && !symbols) {
-      toast('The generated password has been copied to your clipboard.', {
-        description: 'Sunday, December 03, 2023 at 9:00 AM',
-        action: {
-          label: 'Undo',
-          onClick: () => console.log('Undo'),
-        },
+      toast('Cannot generate password', {
+        description:
+          'Please select at least one character type (uppercase, lowercase, numbers, or symbols)',
       });
       return;
     }
     generatePassword(uppercase, lowercase, numbers, symbols);
-  }, [uppercase, lowercase, numbers, symbols, generatePassword, toast]);
+  }, [uppercase, lowercase, numbers, symbols, generatePassword]);
 
   const copyToClipboard = useCallback(() => {
     if (password) {
@@ -61,7 +58,7 @@ export const PasswordControls = () => {
         description: 'Cannot copy an empty password.',
       });
     }
-  }, [password, toast]);
+  }, [password]);
 
   return (
     <div className='space-y-4 mt-6'>
