@@ -25,6 +25,7 @@ export const PasswordGenerator = () => {
         Generate your secure password
       </motion.h3>
       <motion.div
+        className='max-w-xl w-full'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
@@ -38,6 +39,7 @@ export const PasswordGenerator = () => {
         <PasswordDisplay />
       </motion.div>
       <motion.div
+        className='max-w-xl w-full'
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{
