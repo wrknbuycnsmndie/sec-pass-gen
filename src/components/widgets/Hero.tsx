@@ -14,7 +14,7 @@ export const Hero = () => {
           duration: 0.3,
         }}
       >
-        That's a cool, simple passwords generator
+        That&apos;s a cool, simple passwords generator
       </motion.h1>
       <motion.h2
         className='text-xl sm:text-2xl font-medium tracking-tight'
