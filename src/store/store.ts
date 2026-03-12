@@ -1,5 +1,14 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import {
+  persist,
+  createJSONStorage,
+  type StateStorage,
+} from 'zustand/middleware';
+import {
+  generatePassword as buildPassword,
+  MAX_PASSWORD_LENGTH,
+  MIN_PASSWORD_LENGTH,
+} from '../lib/password.ts';
 
 interface PasswordGeneratorStore {
   password: string;
@@ -13,99 +22,67 @@ interface PasswordGeneratorStore {
   setLowercase: (value: boolean) => void;
   setNumbers: (value: boolean) => void;
   setSymbols: (value: boolean) => void;
-  generatePassword: (
-    uppercase: boolean,
-    lowercase: boolean,
-    numbers: boolean,
-    symbols: boolean
-  ) => void;
+  generatePassword: () => void;
 }
 
-export const usePasswordGeneratorStore = create<PasswordGeneratorStore>()(
-  persist(
-    (set, get) => ({
-      password: '',
-      passwordLength: 8,
-      uppercase: true,
-      lowercase: true,
-      numbers: true,
-      symbols: true,
-      setPasswordLength: (length: number) => {
-        set({ passwordLength: Math.max(4, Math.min(50, length)) });
-        get().generatePassword(
-          get().uppercase,
-          get().lowercase,
-          get().numbers,
-          get().symbols
-        );
-      },
+const createStorage = (storage?: StateStorage) =>
+  storage
+    ? createJSONStorage(() => storage)
+    : createJSONStorage(() => localStorage);
 
-      setUppercase: (value: boolean) => set({ uppercase: value }),
-      setLowercase: (value: boolean) => set({ lowercase: value }),
-      setNumbers: (value: boolean) => set({ numbers: value }),
-      setSymbols: (value: boolean) => set({ symbols: value }),
-      generatePassword: (
-        uppercase: boolean,
-        lowercase: boolean,
-        numbers: boolean,
-        symbols: boolean
-      ) => {
-        // If no options was provided
-        if (!uppercase && !lowercase && !numbers && !symbols) {
-          set({ password: '' });
-          return;
-        }
+export const createPasswordGeneratorStore = (storage?: StateStorage) =>
+  create<PasswordGeneratorStore>()(
+    persist(
+      (set, get) => ({
+        password: '',
+        passwordLength: 8,
+        uppercase: true,
+        lowercase: true,
+        numbers: true,
+        symbols: true,
+        setPasswordLength: (length: number) =>
+          set({
+            passwordLength: Math.min(
+              MAX_PASSWORD_LENGTH,
+              Math.max(MIN_PASSWORD_LENGTH, length)
+            ),
+          }),
+        setUppercase: (value: boolean) => set({ uppercase: value }),
+        setLowercase: (value: boolean) => set({ lowercase: value }),
+        setNumbers: (value: boolean) => set({ numbers: value }),
+        setSymbols: (value: boolean) => set({ symbols: value }),
+        generatePassword: () => {
+          const {
+            passwordLength,
+            uppercase,
+            lowercase,
+            numbers,
+            symbols,
+          } = get();
 
-        const charSets = {
-          uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-          lowercase: 'abcdefghijklmnopqrstuvwxyz',
-          numbers: '0123456789',
-          symbols: '!@#$%^&*()_+[]{}|;:,.<>?',
-        };
+          set({
+            password: buildPassword({
+              passwordLength,
+              uppercase,
+              lowercase,
+              numbers,
+              symbols,
+            }),
+          });
+        },
+      }),
+      {
+        name: 'password-storage',
+        storage: createStorage(storage),
+        partialize: ({ passwordLength, uppercase, lowercase, numbers, symbols }) => ({
+          passwordLength,
+          uppercase,
+          lowercase,
+          numbers,
+          symbols,
+        }),
+      }
+    )
+  );
 
-        // Combine selected character sets
-        let charset = '';
-        if (uppercase) charset += charSets.uppercase;
-        if (lowercase) charset += charSets.lowercase;
-        if (numbers) charset += charSets.numbers;
-        if (symbols) charset += charSets.symbols;
-
-        const length = get().passwordLength;
-        let generatedPassword = '';
-
-        // Ensure at least one character from each selected type
-        if (uppercase)
-          generatedPassword +=
-            charSets.uppercase[Math.floor(Math.random() * 26)];
-        if (lowercase)
-          generatedPassword +=
-            charSets.lowercase[Math.floor(Math.random() * 26)];
-        if (numbers)
-          generatedPassword += charSets.numbers[Math.floor(Math.random() * 10)];
-        if (symbols)
-          generatedPassword +=
-            charSets.symbols[
-              Math.floor(Math.random() * charSets.symbols.length)
-            ];
-
-        // Fill remaining length with random characters
-        while (generatedPassword.length < length) {
-          const randomIndex = Math.floor(Math.random() * charset.length);
-          generatedPassword += charset[randomIndex];
-        }
-
-        // Shuffle the password
-        generatedPassword = generatedPassword
-          .split('')
-          .sort(() => Math.random() - 0.5)
-          .join('');
-
-        set({ password: generatedPassword });
-      },
-    }),
-    {
-      name: 'password-storage',
-      storage: createJSONStorage(() => localStorage),
-    }
-  )
-);
+export const usePasswordGeneratorStore = createPasswordGeneratorStore();

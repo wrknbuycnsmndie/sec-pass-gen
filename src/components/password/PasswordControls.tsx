@@ -9,26 +9,50 @@ import { Check, Copy, RefreshCcw } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export const PasswordControls = () => {
-  const passwordLength = usePasswordGeneratorStore(
-    (state) => state.passwordLength
-  );
-  const password = usePasswordGeneratorStore((state) => state.password);
-  const uppercase = usePasswordGeneratorStore((state) => state.uppercase);
-  const lowercase = usePasswordGeneratorStore((state) => state.lowercase);
-  const numbers = usePasswordGeneratorStore((state) => state.numbers);
-  const symbols = usePasswordGeneratorStore((state) => state.symbols);
-  const setPasswordLength = usePasswordGeneratorStore(
-    (state) => state.setPasswordLength
-  );
-  const setUppercase = usePasswordGeneratorStore((state) => state.setUppercase);
-  const setLowercase = usePasswordGeneratorStore((state) => state.setLowercase);
-  const setNumbers = usePasswordGeneratorStore((state) => state.setNumbers);
-  const setSymbols = usePasswordGeneratorStore((state) => state.setSymbols);
-  const generatePassword = usePasswordGeneratorStore(
-    (state) => state.generatePassword
-  );
+  const {
+    passwordLength,
+    password,
+    uppercase,
+    lowercase,
+    numbers,
+    symbols,
+    setPasswordLength,
+    setUppercase,
+    setLowercase,
+    setNumbers,
+    setSymbols,
+    generatePassword,
+  } = usePasswordGeneratorStore();
 
   const [isCopied, setIsCopied] = useState(false);
+  const hasSelectedCharacterType =
+    uppercase || lowercase || numbers || symbols;
+  const passwordOptions = [
+    {
+      id: 'uppercase',
+      label: 'Uppercase Letters',
+      checked: uppercase,
+      onChange: setUppercase,
+    },
+    {
+      id: 'lowercase',
+      label: 'Lowercase Letters',
+      checked: lowercase,
+      onChange: setLowercase,
+    },
+    {
+      id: 'numbers',
+      label: 'Numbers',
+      checked: numbers,
+      onChange: setNumbers,
+    },
+    {
+      id: 'symbols',
+      label: 'Symbols',
+      checked: symbols,
+      onChange: setSymbols,
+    },
+  ] as const;
 
   useEffect(() => {
     if (isCopied) {
@@ -38,21 +62,28 @@ export const PasswordControls = () => {
   }, [isCopied]);
 
   const handleGenerate = useCallback(() => {
-    if (!uppercase && !lowercase && !numbers && !symbols) {
+    if (!hasSelectedCharacterType) {
       toast('Cannot generate password', {
         description:
           'Please select at least one character type (uppercase, lowercase, numbers, or symbols)',
       });
       return;
     }
-    generatePassword(uppercase, lowercase, numbers, symbols);
-  }, [uppercase, lowercase, numbers, symbols, generatePassword]);
+    generatePassword();
+  }, [generatePassword, hasSelectedCharacterType]);
 
-  const copyToClipboard = useCallback(() => {
+  const copyToClipboard = useCallback(async () => {
     if (password) {
-      navigator.clipboard.writeText(password);
+      try {
+        await navigator.clipboard.writeText(password);
+      } catch {
+        toast('Error', {
+          description: 'Failed to copy the generated password.',
+        });
+        return;
+      }
+
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
     } else {
       toast('Error', {
         description: 'Cannot copy an empty password.',
@@ -64,7 +95,7 @@ export const PasswordControls = () => {
     <div className='space-y-4 mt-6'>
       <Button
         onClick={handleGenerate}
-        disabled={!uppercase && !lowercase && !numbers && !symbols}
+        disabled={!hasSelectedCharacterType}
         className='w-full mt-2 bg-primary text-primary-foreground hover:bg-primary/90'
       >
         <RefreshCcw />
@@ -81,42 +112,20 @@ export const PasswordControls = () => {
           value={[passwordLength]}
           onValueChange={(value) => setPasswordLength(value[0])}
           className='mt-2'
-          disabled={!uppercase && !lowercase && !numbers && !symbols}
+          disabled={!hasSelectedCharacterType}
         />
       </div>
       <div className='flex flex-col justify-between md:flex-row gap-2 md:gap-4'>
-        <div className='flex items-center space-x-2'>
-          <Checkbox
-            id='uppercase'
-            checked={uppercase}
-            onCheckedChange={(checked) => setUppercase(!!checked)}
-          />
-          <Label htmlFor='uppercase'>Uppercase Letters</Label>
-        </div>
-        <div className='flex items-center space-x-2'>
-          <Checkbox
-            id='lowercase'
-            checked={lowercase}
-            onCheckedChange={(checked) => setLowercase(!!checked)}
-          />
-          <Label htmlFor='lowercase'>Lowercase Letters</Label>
-        </div>
-        <div className='flex items-center space-x-2'>
-          <Checkbox
-            id='numbers'
-            checked={numbers}
-            onCheckedChange={(checked) => setNumbers(!!checked)}
-          />
-          <Label htmlFor='numbers'>Numbers</Label>
-        </div>
-        <div className='flex items-center space-x-2'>
-          <Checkbox
-            id='symbols'
-            checked={symbols}
-            onCheckedChange={(checked) => setSymbols(!!checked)}
-          />
-          <Label htmlFor='symbols'>Symbols</Label>
-        </div>
+        {passwordOptions.map((option) => (
+          <div key={option.id} className='flex items-center space-x-2'>
+            <Checkbox
+              id={option.id}
+              checked={option.checked}
+              onCheckedChange={(checked) => option.onChange(!!checked)}
+            />
+            <Label htmlFor={option.id}>{option.label}</Label>
+          </div>
+        ))}
       </div>
       <Button
         className='w-full max-w-3xl flex items-center justify-center space-x-2 mt-8'
