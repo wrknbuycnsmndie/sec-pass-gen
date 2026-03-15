@@ -28,7 +28,9 @@ interface PasswordGeneratorStore {
 const createStorage = (storage?: StateStorage) =>
   storage
     ? createJSONStorage(() => storage)
-    : createJSONStorage(() => localStorage);
+    : typeof window === 'undefined'
+      ? undefined
+      : createJSONStorage(() => window.localStorage);
 
 export const createPasswordGeneratorStore = (storage?: StateStorage) =>
   create<PasswordGeneratorStore>()(
