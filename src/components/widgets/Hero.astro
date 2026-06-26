@@ -1,0 +1,67 @@
+---
+---
+
+<section class="hero reveal">
+  <h1>That’s a cool, simple password generator.</h1>
+  <p class="hero__copy">
+    I made this inspired by the wonderful <a
+      class="hero__link"
+      href="https://lastpass.com/features/password-generator"
+      target="_blank"
+      rel="noreferrer"
+    >
+      LastPass generator
+    </a>.
+  </p>
+</section>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 1rem;
+    text-align: center;
+    padding: clamp(1.5rem, 4vw, 3rem) 0;
+  }
+
+  .hero h1 {
+    margin: 0 auto;
+    max-width: 14ch;
+    font-size: clamp(2.6rem, 8vw, 5.8rem);
+    line-height: 0.95;
+    letter-spacing: -0.06em;
+    color: var(--foreground);
+    text-shadow: 0 8px 24px color-mix(in oklab, var(--primary) 12%, transparent);
+    animation: fade-up 700ms ease-out both;
+  }
+
+  .hero__copy {
+    margin: 0 auto;
+    max-width: 56ch;
+    color: var(--muted-text);
+    font-size: clamp(1rem, 1.7vw, 1.15rem);
+    line-height: 1.7;
+    animation: fade-up 700ms ease-out 120ms both;
+  }
+
+  .hero__link {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .hero__link:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

@@ -1,14 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import {
-  CHAR_SETS,
-  MAX_PASSWORD_LENGTH,
-  MIN_PASSWORD_LENGTH,
-  generatePassword,
-} from '../src/lib/password.ts';
+import { CHAR_SETS, generatePassword } from '../src/lib/password/generator.ts';
+import { MAX_PASSWORD_LENGTH, MIN_PASSWORD_LENGTH } from '../src/lib/password/rules.ts';
 
-const containsCharacterFromSet = (password, characters) =>
+const containsCharacterFromSet = (password: string, characters: string) =>
   password.split('').some((character) => characters.includes(character));
 
 test('generatePassword returns the requested length', () => {

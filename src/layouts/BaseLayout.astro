@@ -1,0 +1,80 @@
+---
+import '@/styles/global.css';
+import Header from '@/components/layout/Header.astro';
+import Footer from '@/components/layout/Footer.astro';
+
+const {
+  title = 'SecPassGen Password Generator | wrknbuycnsmndie',
+  description = 'A simple password generator application. Author — https://github.com/wrknbuycnsmndie',
+  image = '/secgenpassword.png',
+} = Astro.props;
+
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#111111" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.ico" />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+    <script is:inline>
+      const storageKey = 'secpassgen-theme';
+      const storedTheme = localStorage.getItem(storageKey);
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle(
+        'dark',
+        storedTheme ? storedTheme === 'dark' : prefersDark,
+      );
+    </script>
+  </head>
+  <body>
+    <div class="page-shell">
+      <Header />
+
+      <main class="container page-main">
+        <slot />
+      </main>
+
+      <Footer />
+    </div>
+
+    <script>
+      import { initPasswordApp } from '@/scripts/password-generator/controller';
+
+      initPasswordApp();
+    </script>
+  </body>
+</html>
+
+<style>
+  .page-shell {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .container {
+    width: min(1080px, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .page-main {
+    flex: 1;
+    padding-block: clamp(1.5rem, 4vw, 3rem) 4rem;
+    display: grid;
+    gap: 1.5rem;
+  }
+</style>
